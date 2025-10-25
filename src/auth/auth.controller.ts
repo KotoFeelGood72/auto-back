@@ -47,12 +47,18 @@ export class AuthController {
   @ApiResponse({ status: 401, description: 'Неверные учетные данные' })
   async login(@Body() loginDto: LoginDto) {
     try {
+      console.log('Login attempt for:', loginDto.email);
       const user = await this.authService.validateUser(loginDto.email, loginDto.password);
+      console.log('User validation result:', user ? 'Success' : 'Failed');
       if (!user) {
         throw new HttpException('Invalid credentials', HttpStatus.UNAUTHORIZED);
       }
       return this.authService.login(user);
     } catch (error) {
+      console.error('Login error:', error);
+      if (error instanceof HttpException) {
+        throw error;
+      }
       throw new HttpException('Login failed', HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }

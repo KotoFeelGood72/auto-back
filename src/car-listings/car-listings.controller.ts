@@ -18,23 +18,89 @@ export class CarListingsController {
   }
 
   @Get()
-  @ApiOperation({ summary: 'Получить все объявления о продаже автомобилей с фильтрацией' })
-  @ApiQuery({ name: 'brand', required: false, description: 'Фильтр по бренду' })
+  @ApiOperation({ summary: 'Получить все объявления о продаже автомобилей с фильтрацией и пагинацией' })
+  @ApiQuery({ name: 'make', required: false, description: 'Фильтр по марке' })
   @ApiQuery({ name: 'model', required: false, description: 'Фильтр по модели' })
   @ApiQuery({ name: 'year', required: false, description: 'Фильтр по году' })
-  @ApiQuery({ name: 'color', required: false, description: 'Фильтр по цвету' })
+  @ApiQuery({ name: 'exterior_color', required: false, description: 'Фильтр по цвету' })
   @ApiQuery({ name: 'minPrice', required: false, description: 'Минимальная цена' })
   @ApiQuery({ name: 'maxPrice', required: false, description: 'Максимальная цена' })
-  @ApiQuery({ name: 'isAvailable', required: false, description: 'Доступность (true/false)' })
-  @ApiQuery({ name: 'ownerId', required: false, description: 'ID владельца' })
-  @ApiResponse({ status: 200, description: 'Список объявлений' })
-  findAll(@Query() filters: any) {
-    return this.carListingsService.findAll(filters);
+  @ApiQuery({ name: 'location', required: false, description: 'Фильтр по местоположению' })
+  @ApiQuery({ name: 'body_type', required: false, description: 'Фильтр по типу кузова' })
+  @ApiQuery({ name: 'fuel_type', required: false, description: 'Фильтр по типу топлива' })
+  @ApiQuery({ name: 'maxKilometers', required: false, description: 'Максимальный пробег' })
+  @ApiQuery({ name: 'limit', required: false, description: 'Количество записей на странице (по умолчанию 10)', example: 10 })
+  @ApiQuery({ name: 'page', required: false, description: 'Номер страницы (начиная с 1, по умолчанию 1)', example: 1 })
+  @ApiQuery({ name: 'search', required: false, description: 'Поиск по названию, марке, модели и другим полям', example: 'Toyota Camry' })
+  @ApiResponse({ 
+    status: 200, 
+    description: 'Список объявлений с пагинацией и изображениями',
+    schema: {
+      type: 'object',
+      properties: {
+        data: {
+          type: 'array',
+          items: { 
+            allOf: [
+              { $ref: '#/components/schemas/CarListing' },
+              {
+                type: 'object',
+                properties: {
+                  images: { 
+                    type: 'array', 
+                    items: { type: 'string' },
+                    description: 'Массив ссылок на изображения автомобиля'
+                  },
+                  main_image: { 
+                    type: 'string',
+                    description: 'Главное изображение автомобиля (первое из массива images)'
+                  }
+                }
+              }
+            ]
+          }
+        },
+        pagination: {
+          type: 'object',
+          properties: {
+            page: { type: 'number', description: 'Текущая страница' },
+            limit: { type: 'number', description: 'Количество записей на странице' },
+            total: { type: 'number', description: 'Общее количество записей' },
+            totalPages: { type: 'number', description: 'Общее количество страниц' }
+          }
+        }
+      }
+    }
+  })
+  async findAll(@Query() filters: any) {
+    return await this.carListingsService.findAll(filters);
   }
 
   @Get(':id')
-  @ApiOperation({ summary: 'Получить объявление по ID' })
-  @ApiResponse({ status: 200, description: 'Объявление найдено' })
+  @ApiOperation({ summary: 'Получить объявление по ID с изображениями' })
+  @ApiResponse({ 
+    status: 200, 
+    description: 'Объявление найдено с изображениями',
+    schema: {
+      allOf: [
+        { $ref: '#/components/schemas/CarListing' },
+        {
+          type: 'object',
+          properties: {
+            images: { 
+              type: 'array', 
+              items: { type: 'string' },
+              description: 'Массив ссылок на изображения автомобиля'
+            },
+            main_image: { 
+              type: 'string',
+              description: 'Главное изображение автомобиля (первое из массива images)'
+            }
+          }
+        }
+      ]
+    }
+  })
   @ApiResponse({ status: 404, description: 'Объявление не найдено' })
   findOne(@Param('id') id: string) {
     return this.carListingsService.findOne(+id);

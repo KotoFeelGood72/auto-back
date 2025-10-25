@@ -6,6 +6,7 @@ import { UsersModule } from './users/users.module';
 import { CarListingsModule } from './car-listings/car-listings.module';
 import { User } from './users/entities/user.entity';
 import { CarListing } from './car-listings/entities/car-listing.entity';
+import { CarPhoto } from './car-listings/entities/car-photo.entity';
 
 @Module({
   imports: [
@@ -19,7 +20,7 @@ import { CarListing } from './car-listings/entities/car-listing.entity';
       username: process.env.DB_USER,
       password: process.env.DB_PASSWORD,
       database: process.env.DB_NAME,
-      entities: [User, CarListing],
+      entities: [User, CarListing, CarPhoto],
       synchronize: false, // Отключаем синхронизацию
       logging: true, // Добавим логирование для отладки
     }),

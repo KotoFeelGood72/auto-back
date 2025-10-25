@@ -1,0 +1,18 @@
+services:
+  # NestJS приложение
+  app:
+    build: .
+    container_name: auto-back-app
+    environment:
+      DB_HOST: 77.232.138.181
+      DB_PORT: 5432
+      DB_USER: root
+      DB_PASSWORD: P@rs3r_S3cR3t!
+      DB_NAME: auto_db
+      JWT_SECRET: your-super-secret-jwt-key-change-this-in-production
+      JWT_EXPIRES_IN: 24h
+      PORT: 3002
+      PWL_HEADLESS: true
+    ports:
+      - "3002:3002"
+    restart: unless-stopped

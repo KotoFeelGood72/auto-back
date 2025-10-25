@@ -1,34 +1,85 @@
-import { IsString, IsNumber, IsBoolean, IsOptional, Min, Max } from 'class-validator';
+import { IsString, IsNumber, IsOptional, Min } from 'class-validator';
 
 export class UpdateCarListingDto {
   @IsOptional()
   @IsString()
-  brand?: string;
+  short_url?: string;
+
+  @IsOptional()
+  @IsString()
+  title?: string;
+
+  @IsOptional()
+  @IsString()
+  make?: string;
 
   @IsOptional()
   @IsString()
   model?: string;
 
   @IsOptional()
-  @IsNumber()
-  @Min(1900)
-  @Max(new Date().getFullYear() + 1)
-  year?: number;
+  @IsString()
+  year?: string;
 
   @IsOptional()
   @IsString()
-  color?: string;
+  body_type?: string;
+
+  @IsOptional()
+  @IsString()
+  horsepower?: string;
+
+  @IsOptional()
+  @IsString()
+  fuel_type?: string;
+
+  @IsOptional()
+  @IsString()
+  motors_trim?: string;
 
   @IsOptional()
   @IsNumber()
   @Min(0)
-  price?: number;
+  kilometers?: number;
 
   @IsOptional()
-  @IsBoolean()
-  isAvailable?: boolean;
+  @IsString()
+  price_formatted?: string;
 
   @IsOptional()
   @IsNumber()
-  ownerId?: number;
+  @Min(0)
+  price_raw?: number;
+
+  @IsOptional()
+  @IsString()
+  currency?: string;
+
+  @IsOptional()
+  @IsString()
+  exterior_color?: string;
+
+  @IsOptional()
+  @IsString()
+  location?: string;
+
+  @IsOptional()
+  @IsString()
+  phone?: string;
+
+  @IsOptional()
+  @IsString()
+  seller_name?: string;
+
+  @IsOptional()
+  @IsString()
+  seller_type?: string;
+
+  @IsOptional()
+  @IsString()
+  seller_logo?: string;
+
+  @IsOptional()
+  @IsString()
+  seller_profile_link?: string;
 }
