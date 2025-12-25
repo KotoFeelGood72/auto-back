@@ -110,7 +110,7 @@ export class ExportService {
       }
 
       // Формирование данных для экспорта
-      const exportData = this.prepareCarData(data, fields);
+      const exportData = await this.prepareCarData(data, fields);
 
       // Экспорт в нужном формате
       const result = await this.exportData(exportData, fields, dto.format, this.CAR_FIELD_NAMES);
@@ -206,9 +206,9 @@ export class ExportService {
 
   private async getCarsData(filters: CarFiltersDto): Promise<CarListing[]> {
     const queryBuilder = this.buildCarsQuery(filters);
-    return await queryBuilder
-      .leftJoinAndSelect('carListing.photos', 'photos')
-      .getMany();
+    // Не загружаем фотографии для экспорта - это значительно ускоряет запрос
+    // Главное изображение будет получено отдельным запросом только для нужных полей
+    return await queryBuilder.getMany();
   }
 
   private buildCarsQuery(filters: CarFiltersDto) {
@@ -293,19 +293,41 @@ export class ExportService {
     return queryBuilder;
   }
 
-  private prepareCarData(data: CarListing[], fields: string[]): any[] {
-    return data.map(item => {
-      const result: any = {};
+  private async prepareCarData(data: CarListing[], fields: string[]): Promise<any[]> {
+    // Если нужно поле main_image, загружаем фотографии только для нужных записей
+    const needsMainImage = fields.includes('main_image');
+    
+    if (needsMainImage && data.length > 0) {
+      const ids = data.map(item => item.id);
+      const photos = await this.carListingsRepository
+        .createQueryBuilder('carListing')
+        .leftJoinAndSelect('carListing.photos', 'photos')
+        .where('carListing.id IN (:...ids)', { ids })
+        .getMany();
       
-      fields.forEach(field => {
-        if (field === 'main_image') {
-          // Получаем главное изображение из photos
-          result[field] = item.photos?.[0]?.photo_url || '';
-        } else {
-          result[field] = item[field] ?? '';
-        }
+      const photosMap = new Map<number, string>();
+      photos.forEach(car => {
+        photosMap.set(car.id, car.photos?.[0]?.photo_url || '');
       });
       
+      return data.map(item => {
+        const result: any = {};
+        fields.forEach(field => {
+          if (field === 'main_image') {
+            result[field] = photosMap.get(item.id) || '';
+          } else {
+            result[field] = item[field] ?? '';
+          }
+        });
+        return result;
+      });
+    }
+    
+    return data.map(item => {
+      const result: any = {};
+      fields.forEach(field => {
+        result[field] = item[field] ?? '';
+      });
       return result;
     });
   }

@@ -30,14 +30,14 @@ export class CarListingsService {
       // Создаем query builder
       const queryBuilder = this.carListingsRepository.createQueryBuilder('carListing');
       
-      // Фильтрация по марке
+      // Фильтрация по марке (без учета регистра)
       if (filters?.make) {
-        queryBuilder.andWhere('carListing.make = :make', { make: filters.make });
+        queryBuilder.andWhere('LOWER(carListing.make) LIKE LOWER(:make)', { make: `%${filters.make}%` });
       }
       
-      // Фильтрация по модели
+      // Фильтрация по модели (без учета регистра)
       if (filters?.model) {
-        queryBuilder.andWhere('carListing.model = :model', { model: filters.model });
+        queryBuilder.andWhere('LOWER(carListing.model) LIKE LOWER(:model)', { model: `%${filters.model}%` });
       }
       
       // Фильтрация по году
@@ -45,9 +45,9 @@ export class CarListingsService {
         queryBuilder.andWhere('carListing.year = :year', { year: filters.year });
       }
       
-      // Фильтрация по цвету
+      // Фильтрация по цвету (без учета регистра)
       if (filters?.exterior_color) {
-        queryBuilder.andWhere('carListing.exterior_color = :exterior_color', { exterior_color: filters.exterior_color });
+        queryBuilder.andWhere('LOWER(carListing.exterior_color) LIKE LOWER(:exterior_color)', { exterior_color: `%${filters.exterior_color}%` });
       }
       
       // Фильтрация по минимальной цене
@@ -65,14 +65,14 @@ export class CarListingsService {
         queryBuilder.andWhere('carListing.location ILIKE :location', { location: `%${filters.location}%` });
       }
       
-      // Фильтрация по типу кузова
+      // Фильтрация по типу кузова (без учета регистра)
       if (filters?.body_type) {
-        queryBuilder.andWhere('carListing.body_type = :body_type', { body_type: filters.body_type });
+        queryBuilder.andWhere('LOWER(carListing.body_type) LIKE LOWER(:body_type)', { body_type: `%${filters.body_type}%` });
       }
       
-      // Фильтрация по типу топлива
+      // Фильтрация по типу топлива (без учета регистра)
       if (filters?.fuel_type) {
-        queryBuilder.andWhere('carListing.fuel_type = :fuel_type', { fuel_type: filters.fuel_type });
+        queryBuilder.andWhere('LOWER(carListing.fuel_type) LIKE LOWER(:fuel_type)', { fuel_type: `%${filters.fuel_type}%` });
       }
       
       // Фильтрация по пробегу (максимальный)
