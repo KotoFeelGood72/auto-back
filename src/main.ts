@@ -6,6 +6,10 @@ import { AppModule } from './app.module';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   
+  // Настройка trust proxy для правильного получения IP адреса
+  const expressApp = app.getHttpAdapter().getInstance();
+  expressApp.set('trust proxy', true);
+  
   // Глобальная валидация
   app.useGlobalPipes(new ValidationPipe({
     whitelist: true,

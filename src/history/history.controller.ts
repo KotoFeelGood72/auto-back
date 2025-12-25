@@ -21,13 +21,17 @@ import { HistoryService } from './history.service';
 import { CreateHistoryDto } from './dto/create-history.dto';
 import { FilterHistoryDto } from './dto/filter-history.dto';
 import { StatsHistoryDto } from './dto/stats-history.dto';
+import { UsersService } from '../users/users.service';
 
 @ApiTags('История изменений')
 @Controller('api/history')
 @UseGuards(JwtAuthGuard)
 @ApiBearerAuth()
 export class HistoryController {
-  constructor(private readonly historyService: HistoryService) {}
+  constructor(
+    private readonly historyService: HistoryService,
+    private readonly usersService: UsersService,
+  ) {}
 
   @Post()
   @HttpCode(HttpStatus.CREATED)
@@ -37,7 +41,18 @@ export class HistoryController {
   @ApiResponse({ status: 401, description: 'Не авторизован' })
   async create(@Body() dto: CreateHistoryDto, @Req() req: Request) {
     const user = req.user as any;
-    const userName = `${user.firstName || ''} ${user.lastName || ''}`.trim() || user.email;
+    
+    // Получаем полную информацию о пользователе для имени
+    let userName = user.email;
+    try {
+      const fullUser = await this.usersService.findOne(user.userId);
+      userName = fullUser.firstName && fullUser.lastName 
+        ? `${fullUser.firstName} ${fullUser.lastName}` 
+        : fullUser.email;
+    } catch (error) {
+      // Если не удалось получить пользователя, используем email
+      userName = user.email;
+    }
     
     return await this.historyService.create(dto, user.userId, userName, req);
   }

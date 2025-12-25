@@ -22,6 +22,17 @@ export class HistoryService {
     userName: string,
     request?: Request,
   ): Promise<History> {
+    // Получаем IP адрес из различных источников
+    let ipAddress: string | null = null;
+    if (request) {
+      ipAddress = 
+        (request as any).ip || 
+        request.headers['x-forwarded-for']?.toString().split(',')[0] ||
+        request.headers['x-real-ip']?.toString() ||
+        request.socket?.remoteAddress ||
+        null;
+    }
+
     const history = this.historyRepository.create({
       entityType: dto.entity_type,
       entityId: dto.entity_id,
@@ -30,7 +41,7 @@ export class HistoryService {
       userId,
       userName,
       description: dto.description || null,
-      ipAddress: request?.ip || request?.socket?.remoteAddress || null,
+      ipAddress,
       userAgent: request?.headers['user-agent'] || null,
     });
 

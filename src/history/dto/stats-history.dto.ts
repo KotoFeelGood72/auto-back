@@ -1,4 +1,4 @@
-import { IsEnum, IsNumber, IsOptional, IsDateString } from 'class-validator';
+import { IsEnum, IsNumber, IsOptional, IsDateString, Min } from 'class-validator';
 import { Type } from 'class-transformer';
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { EntityType } from './create-history.dto';
