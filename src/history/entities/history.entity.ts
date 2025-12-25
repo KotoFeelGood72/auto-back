@@ -1,17 +1,16 @@
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, Index } from 'typeorm';
 
 @Entity('history')
-@Index(['entity_type', 'entity_id'])
-@Index(['user_id'])
+@Index(['entityType', 'entityId'])
+@Index(['userId'])
 @Index(['action'])
-@Index(['created_at'])
-@Index(['entity_type', 'entity_id', 'created_at'])
+@Index(['createdAt'])
+@Index(['entityType', 'entityId', 'createdAt'])
 export class History {
   @PrimaryGeneratedColumn()
   id: number;
 
   @Column({ type: 'varchar', length: 50, name: 'entity_type' })
-  @Index()
   entityType: string;
 
   @Column({ type: 'integer', name: 'entity_id' })
