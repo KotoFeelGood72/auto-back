@@ -33,7 +33,7 @@ export class UsersService {
   async findOne(id: number): Promise<User> {
     const user = await this.usersRepository.findOne({
       where: { id },
-      select: ['id', 'email', 'firstName', 'lastName', 'isActive', 'createdAt', 'updatedAt'],
+      select: ['id', 'email', 'firstName', 'lastName', 'isActive', 'role', 'phone', 'bio', 'createdAt', 'updatedAt'],
     });
     
     if (!user) {
