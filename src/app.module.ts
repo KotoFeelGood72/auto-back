@@ -4,6 +4,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
 import { CarListingsModule } from './car-listings/car-listings.module';
+import { ExportModule } from './export/export.module';
 import { User } from './users/entities/user.entity';
 import { CarListing } from './car-listings/entities/car-listing.entity';
 import { CarPhoto } from './car-listings/entities/car-photo.entity';
@@ -27,6 +28,7 @@ import { CarPhoto } from './car-listings/entities/car-photo.entity';
     AuthModule,
     UsersModule,
     CarListingsModule,
+    ExportModule,
   ],
 })
 export class AppModule {}

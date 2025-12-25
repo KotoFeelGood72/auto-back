@@ -20,6 +20,15 @@ export class User {
   @Column({ name: 'is_active', default: true })
   isActive: boolean;
 
+  @Column({ type: 'varchar', length: 50, default: 'user' })
+  role: string;
+
+  @Column({ type: 'text', nullable: true })
+  phone: string;
+
+  @Column({ type: 'text', nullable: true })
+  bio: string;
+
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
 
