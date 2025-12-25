@@ -1,10 +1,13 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, Inject, forwardRef } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CarListing } from './entities/car-listing.entity';
 import { CarPhoto } from './entities/car-photo.entity';
 import { CreateCarListingDto } from './dto/create-car-listing.dto';
 import { UpdateCarListingDto } from './dto/update-car-listing.dto';
+import { HistoryService } from '../history/history.service';
+import { EntityType, ActionType } from '../history/dto/create-history.dto';
+import { Request } from 'express';
 
 @Injectable()
 export class CarListingsService {
@@ -13,11 +16,35 @@ export class CarListingsService {
     private carListingsRepository: Repository<CarListing>,
     @InjectRepository(CarPhoto)
     private carPhotosRepository: Repository<CarPhoto>,
+    @Inject(forwardRef(() => HistoryService))
+    private historyService: HistoryService,
   ) {}
 
-  async create(createCarListingDto: CreateCarListingDto): Promise<CarListing> {
+  async create(createCarListingDto: CreateCarListingDto, userId?: number, userName?: string, request?: Request): Promise<CarListing> {
     const carListing = this.carListingsRepository.create(createCarListingDto);
-    return this.carListingsRepository.save(carListing);
+    const saved = await this.carListingsRepository.save(carListing);
+    
+    // Логируем создание
+    if (userId) {
+      try {
+        await this.historyService.create(
+          {
+            entity_type: EntityType.CAR,
+            entity_id: saved.id,
+            action: ActionType.CREATE,
+            description: `Создано объявление: ${saved.title || saved.make + ' ' + saved.model}`,
+          },
+          userId,
+          userName || '',
+          request,
+        );
+      } catch (error) {
+        // Не прерываем выполнение, если логирование не удалось
+        console.error('Ошибка логирования создания автомобиля:', error);
+      }
+    }
+    
+    return saved;
   }
 
   async findAll(filters?: any): Promise<{ data: CarListing[]; pagination: any }> {
@@ -143,14 +170,61 @@ export class CarListingsService {
     } as CarListing;
   }
 
-  async update(id: number, updateCarListingDto: UpdateCarListingDto): Promise<CarListing> {
-    const carListing = await this.findOne(id);
-    Object.assign(carListing, updateCarListingDto);
-    return this.carListingsRepository.save(carListing);
+  async update(id: number, updateCarListingDto: UpdateCarListingDto, userId?: number, userName?: string, request?: Request): Promise<CarListing> {
+    const oldCarListing = await this.findOne(id);
+    const oldData = { ...oldCarListing };
+    delete oldData.photos; // Удаляем связанные данные для сравнения
+    
+    Object.assign(oldCarListing, updateCarListingDto);
+    const saved = await this.carListingsRepository.save(oldCarListing);
+    
+    // Определяем изменения
+    if (userId) {
+      try {
+        const changes = this.historyService.compareObjects(oldData, saved);
+        await this.historyService.create(
+          {
+            entity_type: EntityType.CAR,
+            entity_id: saved.id,
+            action: ActionType.UPDATE,
+            changes: changes || undefined,
+            description: `Обновлено объявление: ${saved.title || saved.make + ' ' + saved.model}`,
+          },
+          userId,
+          userName || '',
+          request,
+        );
+      } catch (error) {
+        console.error('Ошибка логирования обновления автомобиля:', error);
+      }
+    }
+    
+    return saved;
   }
 
-  async remove(id: number): Promise<void> {
+  async remove(id: number, userId?: number, userName?: string, request?: Request): Promise<void> {
     const carListing = await this.findOne(id);
+    const title = carListing.title || carListing.make + ' ' + carListing.model;
+    
     await this.carListingsRepository.remove(carListing);
+    
+    // Логируем удаление
+    if (userId) {
+      try {
+        await this.historyService.create(
+          {
+            entity_type: EntityType.CAR,
+            entity_id: id,
+            action: ActionType.DELETE,
+            description: `Удалено объявление: ${title}`,
+          },
+          userId,
+          userName || '',
+          request,
+        );
+      } catch (error) {
+        console.error('Ошибка логирования удаления автомобиля:', error);
+      }
+    }
   }
 }

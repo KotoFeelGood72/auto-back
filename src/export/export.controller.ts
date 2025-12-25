@@ -5,12 +5,13 @@ import {
   Body,
   Query,
   Res,
+  Req,
   HttpStatus,
   UseGuards,
   HttpCode,
   BadRequestException,
 } from '@nestjs/common';
-import { Response } from 'express';
+import { Response, Request } from 'express';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from './guards/roles.guard';
@@ -38,9 +39,11 @@ export class ExportController {
   @ApiResponse({ status: 403, description: 'Недостаточно прав' })
   @ApiResponse({ status: 413, description: 'Превышен лимит записей' })
   @ApiResponse({ status: 504, description: 'Превышено время выполнения' })
-  async exportCars(@Body() dto: ExportCarsDto, @Res() res: Response) {
+  async exportCars(@Body() dto: ExportCarsDto, @Res() res: Response, @Req() req: Request) {
     try {
-      const result = await this.exportService.exportCars(dto);
+      const user = req.user as any;
+      const userName = user.firstName && user.lastName ? `${user.firstName} ${user.lastName}` : user.email;
+      const result = await this.exportService.exportCars(dto, user.userId, userName, req);
 
       if (dto.format === ExportFormat.JSON) {
         res.setHeader('Content-Type', 'application/json; charset=utf-8');
@@ -69,9 +72,11 @@ export class ExportController {
   @ApiResponse({ status: 403, description: 'Недостаточно прав' })
   @ApiResponse({ status: 413, description: 'Превышен лимит записей' })
   @ApiResponse({ status: 504, description: 'Превышено время выполнения' })
-  async exportUsers(@Body() dto: ExportUsersDto, @Res() res: Response) {
+  async exportUsers(@Body() dto: ExportUsersDto, @Res() res: Response, @Req() req: Request) {
     try {
-      const result = await this.exportService.exportUsers(dto);
+      const user = req.user as any;
+      const userName = user.firstName && user.lastName ? `${user.firstName} ${user.lastName}` : user.email;
+      const result = await this.exportService.exportUsers(dto, user.userId, userName, req);
 
       if (dto.format === ExportFormat.JSON) {
         res.setHeader('Content-Type', 'application/json; charset=utf-8');

@@ -1,4 +1,5 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Query } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Query, Req } from '@nestjs/common';
+import { Request } from 'express';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
 import { CarListingsService } from './car-listings.service';
 import { CreateCarListingDto } from './dto/create-car-listing.dto';
@@ -11,10 +12,14 @@ export class CarListingsController {
   constructor(private readonly carListingsService: CarListingsService) {}
 
   @Post()
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
   @ApiOperation({ summary: 'Создать новое объявление о продаже автомобиля' })
   @ApiResponse({ status: 201, description: 'Объявление создано' })
-  create(@Body() createCarListingDto: CreateCarListingDto) {
-    return this.carListingsService.create(createCarListingDto);
+  create(@Body() createCarListingDto: CreateCarListingDto, @Req() req: Request) {
+    const user = req.user as any;
+    const userName = user.firstName && user.lastName ? `${user.firstName} ${user.lastName}` : user.email;
+    return this.carListingsService.create(createCarListingDto, user.userId, userName, req);
   }
 
   @Get()
@@ -107,18 +112,26 @@ export class CarListingsController {
   }
 
   @Patch(':id')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
   @ApiOperation({ summary: 'Обновить объявление' })
   @ApiResponse({ status: 200, description: 'Объявление обновлено' })
   @ApiResponse({ status: 404, description: 'Объявление не найдено' })
-  update(@Param('id') id: string, @Body() updateCarListingDto: UpdateCarListingDto) {
-    return this.carListingsService.update(+id, updateCarListingDto);
+  update(@Param('id') id: string, @Body() updateCarListingDto: UpdateCarListingDto, @Req() req: Request) {
+    const user = req.user as any;
+    const userName = user.firstName && user.lastName ? `${user.firstName} ${user.lastName}` : user.email;
+    return this.carListingsService.update(+id, updateCarListingDto, user.userId, userName, req);
   }
 
   @Delete(':id')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
   @ApiOperation({ summary: 'Удалить объявление' })
   @ApiResponse({ status: 200, description: 'Объявление удалено' })
   @ApiResponse({ status: 404, description: 'Объявление не найдено' })
-  remove(@Param('id') id: string) {
-    return this.carListingsService.remove(+id);
+  remove(@Param('id') id: string, @Req() req: Request) {
+    const user = req.user as any;
+    const userName = user.firstName && user.lastName ? `${user.firstName} ${user.lastName}` : user.email;
+    return this.carListingsService.remove(+id, user.userId, userName, req);
   }
 }

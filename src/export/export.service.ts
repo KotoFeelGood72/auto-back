@@ -1,4 +1,4 @@
-import { Injectable, BadRequestException, PayloadTooLargeException, GatewayTimeoutException, Logger } from '@nestjs/common';
+import { Injectable, BadRequestException, PayloadTooLargeException, GatewayTimeoutException, Logger, Inject, forwardRef } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CarListing } from '../car-listings/entities/car-listing.entity';
@@ -6,6 +6,9 @@ import { User } from '../users/entities/user.entity';
 import { ExportFormat } from './dto/export-cars.dto';
 import { ExportCarsDto, CarFiltersDto } from './dto/export-cars.dto';
 import { ExportUsersDto, UserFiltersDto } from './dto/export-users.dto';
+import { HistoryService } from '../history/history.service';
+import { EntityType, ActionType } from '../history/dto/create-history.dto';
+import { Request } from 'express';
 import * as XLSX from 'xlsx';
 
 @Injectable()
@@ -90,9 +93,11 @@ export class ExportService {
     private carListingsRepository: Repository<CarListing>,
     @InjectRepository(User)
     private usersRepository: Repository<User>,
+    @Inject(forwardRef(() => HistoryService))
+    private historyService: HistoryService,
   ) {}
 
-  async exportCars(dto: ExportCarsDto): Promise<Buffer | string> {
+  async exportCars(dto: ExportCarsDto, userId?: number, userName?: string, request?: Request): Promise<Buffer | string> {
     const startTime = Date.now();
     
     try {
@@ -118,6 +123,25 @@ export class ExportService {
       const duration = Date.now() - startTime;
       this.logger.log(`Экспорт автомобилей: ${data.length} записей, формат: ${dto.format}, время: ${duration}ms`);
 
+      // Логируем экспорт
+      if (userId) {
+        try {
+          await this.historyService.create(
+            {
+              entity_type: EntityType.EXPORT,
+              entity_id: 0, // Для экспорта entity_id не имеет значения
+              action: ActionType.EXPORT,
+              description: `Экспорт автомобилей: ${data.length} записей, формат: ${dto.format}`,
+            },
+            userId,
+            userName || '',
+            request,
+          );
+        } catch (error) {
+          console.error('Ошибка логирования экспорта автомобилей:', error);
+        }
+      }
+
       return result;
     } catch (error) {
       if (error instanceof PayloadTooLargeException) {
@@ -131,7 +155,7 @@ export class ExportService {
     }
   }
 
-  async exportUsers(dto: ExportUsersDto): Promise<Buffer | string> {
+  async exportUsers(dto: ExportUsersDto, userId?: number, userName?: string, request?: Request): Promise<Buffer | string> {
     const startTime = Date.now();
     
     try {
@@ -156,6 +180,25 @@ export class ExportService {
 
       const duration = Date.now() - startTime;
       this.logger.log(`Экспорт пользователей: ${data.length} записей, формат: ${dto.format}, время: ${duration}ms`);
+
+      // Логируем экспорт
+      if (userId) {
+        try {
+          await this.historyService.create(
+            {
+              entity_type: EntityType.EXPORT,
+              entity_id: 0,
+              action: ActionType.EXPORT,
+              description: `Экспорт пользователей: ${data.length} записей, формат: ${dto.format}`,
+            },
+            userId,
+            userName || '',
+            request,
+          );
+        } catch (error) {
+          console.error('Ошибка логирования экспорта пользователей:', error);
+        }
+      }
 
       return result;
     } catch (error) {
