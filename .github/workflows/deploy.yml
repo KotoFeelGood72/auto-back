@@ -42,8 +42,6 @@ jobs:
             
             # Собираем и запускаем новый контейнер
             docker-compose up -d --build
-            
-            # Очищаем неиспользуемые образы
             docker image prune -f
           EOF
 
