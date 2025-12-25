@@ -14,7 +14,7 @@ npm install
 Создайте файл `.env` в корне проекта:
 
 ```env
-DB_HOST=77.232.138.181
+DB_HOST=194.87.130.217
 DB_PORT=5432
 DB_USER=root
 DB_PASSWORD=P@rs3r_S3cR3t!

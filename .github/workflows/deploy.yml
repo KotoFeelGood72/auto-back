@@ -1,0 +1,53 @@
+name: Deploy to Server
+
+on:
+  push:
+    branches:
+      - main
+      - master
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up SSH
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+
+      - name: Add server to known hosts
+        run: |
+          ssh-keyscan -H 194.87.130.217 >> ~/.ssh/known_hosts
+
+      - name: Copy files to server
+        run: |
+          rsync -avz --exclude 'node_modules' --exclude '.git' --exclude 'dist' \
+            -e ssh ./ root@194.87.130.217:/root/auto-back/
+
+      - name: Build and deploy on server
+        run: |
+          ssh root@194.87.130.217 << 'EOF'
+            cd /root/auto-back
+            
+            # Останавливаем и удаляем старый контейнер
+            docker-compose down || true
+            
+            # Удаляем старый образ (опционально)
+            docker rmi auto-back-app || true
+            
+            # Собираем и запускаем новый контейнер
+            docker-compose up -d --build
+            
+            # Очищаем неиспользуемые образы
+            docker image prune -f
+          EOF
+
+      - name: Check deployment status
+        run: |
+          ssh root@194.87.130.217 'docker ps | grep auto-back-app || echo "Container not running"'
+
