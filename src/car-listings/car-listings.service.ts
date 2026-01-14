@@ -49,7 +49,7 @@ export class CarListingsService {
     return saved;
   }
 
-  async findAll(filters?: any): Promise<{ data: CarListing[]; pagination: any }> {
+  async findAll(filters?: any): Promise<{ data: CarListing[]; pagination: any; availableStatuses: string[] }> {
     try {
       // Параметры пагинации
       const page = parseInt(filters?.page) || 1;
