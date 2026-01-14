@@ -79,6 +79,10 @@ export class PreviewExportDto {
   })
   date_to?: string;
 
+  @IsOptional()
+  @IsString()
+  status?: string;
+
   // Фильтры для пользователей
   @IsOptional()
   @IsString()

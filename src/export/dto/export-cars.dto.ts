@@ -73,6 +73,10 @@ export class CarFiltersDto {
     message: 'Неверный формат даты. Используйте формат ISO 8601 (YYYY-MM-DD или YYYY-MM-DDTHH:mm:ss)',
   })
   date_to?: string;
+
+  @IsOptional()
+  @IsString()
+  status?: string;
 }
 
 export class ExportCarsDto {

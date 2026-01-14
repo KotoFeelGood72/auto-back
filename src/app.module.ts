@@ -6,6 +6,7 @@ import { UsersModule } from './users/users.module';
 import { CarListingsModule } from './car-listings/car-listings.module';
 import { ExportModule } from './export/export.module';
 import { HistoryModule } from './history/history.module';
+import { StatisticsModule } from './statistics/statistics.module';
 import { User } from './users/entities/user.entity';
 import { CarListing } from './car-listings/entities/car-listing.entity';
 import { CarPhoto } from './car-listings/entities/car-photo.entity';
@@ -32,6 +33,7 @@ import { History } from './history/entities/history.entity';
     CarListingsModule,
     ExportModule,
     HistoryModule,
+    StatisticsModule,
   ],
 })
 export class AppModule {}

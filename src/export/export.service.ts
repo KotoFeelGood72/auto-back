@@ -38,6 +38,7 @@ export class ExportService {
     'seller_type',
     'short_url',
     'main_image',
+    'status',
     'created_at',
     'updated_at',
   ];
@@ -75,6 +76,7 @@ export class ExportService {
     seller_type: 'Тип продавца',
     short_url: 'URL',
     main_image: 'Главное изображение',
+    status: 'Статус',
     created_at: 'Дата создания',
     updated_at: 'Дата обновления',
   };
@@ -371,6 +373,11 @@ export class ExportService {
       if (dateTo) {
         queryBuilder.andWhere('carListing.created_at <= :date_to', { date_to: dateTo });
       }
+    }
+
+    // Фильтрация по статусу
+    if (filters.status) {
+      queryBuilder.andWhere('carListing.status = :status', { status: filters.status });
     }
 
     return queryBuilder;
