@@ -82,4 +82,8 @@ export class UpdateCarListingDto {
   @IsOptional()
   @IsString()
   seller_profile_link?: string;
+
+  @IsOptional()
+  @IsString()
+  status?: string;
 }

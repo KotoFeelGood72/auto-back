@@ -66,6 +66,9 @@ export class CarListing {
   @Column({ type: 'text', nullable: true })
   seller_profile_link: string;
 
+  @Column({ type: 'text', nullable: true })
+  status: string;
+
   @OneToMany(() => CarPhoto, photo => photo.carListing)
   photos: CarPhoto[];
 

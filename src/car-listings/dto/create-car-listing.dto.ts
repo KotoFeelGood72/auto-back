@@ -177,4 +177,13 @@ export class CreateCarListingDto {
   @IsOptional()
   @IsString()
   seller_profile_link?: string;
+
+  @ApiPropertyOptional({ 
+    description: 'Статус объявления', 
+    example: 'Активно',
+    enum: ['Продано', 'Активно', 'Долго продается', 'Появилось недавно']
+  })
+  @IsOptional()
+  @IsString()
+  status?: string;
 }

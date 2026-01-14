@@ -9,6 +9,8 @@ import { HistoryService } from '../history/history.service';
 import { EntityType, ActionType } from '../history/dto/create-history.dto';
 import { Request } from 'express';
 
+export const AVAILABLE_STATUSES = ['Продано', 'Активно', 'Долго продается', 'Появилось недавно'];
+
 @Injectable()
 export class CarListingsService {
   constructor(
@@ -107,6 +109,11 @@ export class CarListingsService {
         queryBuilder.andWhere('carListing.kilometers <= :maxKilometers', { maxKilometers: parseInt(filters.maxKilometers) });
       }
       
+      // Фильтрация по статусу
+      if (filters?.status) {
+        queryBuilder.andWhere('carListing.status = :status', { status: filters.status });
+      }
+      
       // Поиск по нескольким полям
       if (filters?.search) {
         const searchTerm = `%${filters.search}%`;
@@ -144,7 +151,8 @@ export class CarListingsService {
           limit,
           total,
           totalPages
-        }
+        },
+        availableStatuses: AVAILABLE_STATUSES
       };
     } catch (error) {
       console.error('Error in findAll:', error);

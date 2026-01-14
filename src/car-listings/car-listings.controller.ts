@@ -1,7 +1,7 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Query, Req } from '@nestjs/common';
 import { Request } from 'express';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
-import { CarListingsService } from './car-listings.service';
+import { CarListingsService, AVAILABLE_STATUSES } from './car-listings.service';
 import { CreateCarListingDto } from './dto/create-car-listing.dto';
 import { UpdateCarListingDto } from './dto/update-car-listing.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
@@ -34,6 +34,7 @@ export class CarListingsController {
   @ApiQuery({ name: 'body_type', required: false, description: 'Фильтр по типу кузова' })
   @ApiQuery({ name: 'fuel_type', required: false, description: 'Фильтр по типу топлива' })
   @ApiQuery({ name: 'maxKilometers', required: false, description: 'Максимальный пробег' })
+  @ApiQuery({ name: 'status', required: false, description: 'Фильтр по статусу объявления', enum: AVAILABLE_STATUSES, example: 'Активно' })
   @ApiQuery({ name: 'limit', required: false, description: 'Количество записей на странице (по умолчанию 10)', example: 10 })
   @ApiQuery({ name: 'page', required: false, description: 'Номер страницы (начиная с 1, по умолчанию 1)', example: 1 })
   @ApiQuery({ name: 'search', required: false, description: 'Поиск по названию, марке, модели и другим полям', example: 'Toyota Camry' })
@@ -73,6 +74,12 @@ export class CarListingsController {
             total: { type: 'number', description: 'Общее количество записей' },
             totalPages: { type: 'number', description: 'Общее количество страниц' }
           }
+        },
+        availableStatuses: {
+          type: 'array',
+          items: { type: 'string' },
+          description: 'Доступные статусы для фильтрации',
+          example: ['Продано', 'Активно', 'Долго продается', 'Появилось недавно']
         }
       }
     }
