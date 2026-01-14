@@ -38,6 +38,7 @@ export class ExportService {
     'seller_type',
     'short_url',
     'main_image',
+    'created_at',
     'updated_at',
   ];
 
@@ -74,6 +75,7 @@ export class ExportService {
     seller_type: 'Тип продавца',
     short_url: 'URL',
     main_image: 'Главное изображение',
+    created_at: 'Дата создания',
     updated_at: 'Дата обновления',
   };
 
@@ -321,7 +323,91 @@ export class ExportService {
       }
     }
 
+    // Фильтрация по датам
+    if (filters.date_from || filters.date_to) {
+      // Валидация формата и логики дат
+      let dateFrom: Date | null = null;
+      let dateTo: Date | null = null;
+
+      if (filters.date_from) {
+        dateFrom = this.parseDate(filters.date_from, true);
+        if (!dateFrom) {
+          throw new BadRequestException({
+            error: {
+              message: 'Неверный формат даты. Используйте формат ISO 8601 (YYYY-MM-DD или YYYY-MM-DDTHH:mm:ss)',
+              code: 'INVALID_DATE_FORMAT',
+            },
+          });
+        }
+      }
+
+      if (filters.date_to) {
+        dateTo = this.parseDate(filters.date_to, false);
+        if (!dateTo) {
+          throw new BadRequestException({
+            error: {
+              message: 'Неверный формат даты. Используйте формат ISO 8601 (YYYY-MM-DD или YYYY-MM-DDTHH:mm:ss)',
+              code: 'INVALID_DATE_FORMAT',
+            },
+          });
+        }
+      }
+
+      // Проверка логики: date_from не может быть больше date_to
+      if (dateFrom && dateTo && dateFrom > dateTo) {
+        throw new BadRequestException({
+          error: {
+            message: 'Дата начала не может быть больше даты окончания',
+            code: 'INVALID_DATE_RANGE',
+          },
+        });
+      }
+
+      // Применение фильтров
+      if (dateFrom) {
+        queryBuilder.andWhere('carListing.created_at >= :date_from', { date_from: dateFrom });
+      }
+
+      if (dateTo) {
+        queryBuilder.andWhere('carListing.created_at <= :date_to', { date_to: dateTo });
+      }
+    }
+
     return queryBuilder;
+  }
+
+  /**
+   * Парсит строку даты в объект Date
+   * @param dateString - строка даты в формате ISO 8601
+   * @param isStartOfDay - если true и время не указано, использовать начало дня (00:00:00), иначе конец дня (23:59:59)
+   * @returns объект Date или null если формат неверный
+   */
+  private parseDate(dateString: string, isStartOfDay: boolean): Date | null {
+    try {
+      // Если дата в формате YYYY-MM-DD (без времени)
+      if (/^\d{4}-\d{2}-\d{2}$/.test(dateString)) {
+        const date = new Date(dateString);
+        if (isNaN(date.getTime())) {
+          return null;
+        }
+        // Если время не указано, устанавливаем начало или конец дня
+        if (isStartOfDay) {
+          date.setUTCHours(0, 0, 0, 0);
+        } else {
+          date.setUTCHours(23, 59, 59, 999);
+        }
+        return date;
+      }
+
+      // Если дата с временем
+      const date = new Date(dateString);
+      if (isNaN(date.getTime())) {
+        return null;
+      }
+      return date;
+    } catch (error) {
+      return null;
+    }
   }
 
   private async getUsersData(filters: UserFiltersDto): Promise<User[]> {
@@ -365,6 +451,10 @@ export class ExportService {
         fields.forEach(field => {
           if (field === 'main_image') {
             result[field] = photosMap.get(item.id) || '';
+          } else if (field === 'created_at') {
+            result[field] = item.created_at ? new Date(item.created_at).toISOString() : '';
+          } else if (field === 'updated_at') {
+            result[field] = item.updated_at ? new Date(item.updated_at).toISOString() : '';
           } else {
             result[field] = item[field] ?? '';
           }
@@ -376,7 +466,13 @@ export class ExportService {
     return data.map(item => {
       const result: any = {};
       fields.forEach(field => {
-        result[field] = item[field] ?? '';
+        if (field === 'created_at') {
+          result[field] = item.created_at ? new Date(item.created_at).toISOString() : '';
+        } else if (field === 'updated_at') {
+          result[field] = item.updated_at ? new Date(item.updated_at).toISOString() : '';
+        } else {
+          result[field] = item[field] ?? '';
+        }
       });
       return result;
     });

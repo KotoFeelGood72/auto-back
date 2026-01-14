@@ -105,6 +105,8 @@ export class ExportController {
   @ApiQuery({ name: 'price_max', required: false, type: Number, description: 'Максимальная цена' })
   @ApiQuery({ name: 'kilometers_min', required: false, type: Number, description: 'Минимальный пробег' })
   @ApiQuery({ name: 'kilometers_max', required: false, type: Number, description: 'Максимальный пробег' })
+  @ApiQuery({ name: 'date_from', required: false, type: String, description: 'Дата начала (ISO 8601: YYYY-MM-DD или YYYY-MM-DDTHH:mm:ss)' })
+  @ApiQuery({ name: 'date_to', required: false, type: String, description: 'Дата окончания (ISO 8601: YYYY-MM-DD или YYYY-MM-DDTHH:mm:ss)' })
   @ApiQuery({ name: 'role', required: false, description: 'Роль пользователя' })
   @ApiQuery({ name: 'email', required: false, description: 'Email пользователя' })
   @ApiResponse({ status: 200, description: 'Количество записей' })
@@ -131,6 +133,8 @@ export class ExportController {
         price_max: query.price_max,
         kilometers_min: query.kilometers_min,
         kilometers_max: query.kilometers_max,
+        date_from: query.date_from,
+        date_to: query.date_to,
       };
     } else {
       filters = {

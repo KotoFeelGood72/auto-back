@@ -1,4 +1,4 @@
-import { IsEnum, IsOptional, IsString, IsNumber, Min, Max } from 'class-validator';
+import { IsEnum, IsOptional, IsString, IsNumber, Min, Max, Matches } from 'class-validator';
 import { Type } from 'class-transformer';
 import { CarFiltersDto } from './export-cars.dto';
 import { UserFiltersDto } from './export-users.dto';
@@ -64,6 +64,20 @@ export class PreviewExportDto {
   @Type(() => Number)
   @Min(0)
   kilometers_max?: number;
+
+  @IsOptional()
+  @IsString()
+  @Matches(/^\d{4}-\d{2}-\d{2}(T\d{2}:\d{2}:\d{2}(\.\d{3})?(Z|[+-]\d{2}:\d{2})?)?$/, {
+    message: 'Неверный формат даты. Используйте формат ISO 8601 (YYYY-MM-DD или YYYY-MM-DDTHH:mm:ss)',
+  })
+  date_from?: string;
+
+  @IsOptional()
+  @IsString()
+  @Matches(/^\d{4}-\d{2}-\d{2}(T\d{2}:\d{2}:\d{2}(\.\d{3})?(Z|[+-]\d{2}:\d{2})?)?$/, {
+    message: 'Неверный формат даты. Используйте формат ISO 8601 (YYYY-MM-DD или YYYY-MM-DDTHH:mm:ss)',
+  })
+  date_to?: string;
 
   // Фильтры для пользователей
   @IsOptional()

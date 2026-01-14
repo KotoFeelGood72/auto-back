@@ -1,4 +1,4 @@
-import { IsEnum, IsOptional, IsArray, IsString, IsNumber, IsObject, ValidateNested, Min, Max } from 'class-validator';
+import { IsEnum, IsOptional, IsArray, IsString, IsNumber, IsObject, ValidateNested, Min, Max, Matches } from 'class-validator';
 import { Type } from 'class-transformer';
 
 export enum ExportFormat {
@@ -59,6 +59,20 @@ export class CarFiltersDto {
   @Type(() => Number)
   @Min(0)
   kilometers_max?: number;
+
+  @IsOptional()
+  @IsString()
+  @Matches(/^\d{4}-\d{2}-\d{2}(T\d{2}:\d{2}:\d{2}(\.\d{3})?(Z|[+-]\d{2}:\d{2})?)?$/, {
+    message: 'Неверный формат даты. Используйте формат ISO 8601 (YYYY-MM-DD или YYYY-MM-DDTHH:mm:ss)',
+  })
+  date_from?: string;
+
+  @IsOptional()
+  @IsString()
+  @Matches(/^\d{4}-\d{2}-\d{2}(T\d{2}:\d{2}:\d{2}(\.\d{3})?(Z|[+-]\d{2}:\d{2})?)?$/, {
+    message: 'Неверный формат даты. Используйте формат ISO 8601 (YYYY-MM-DD или YYYY-MM-DDTHH:mm:ss)',
+  })
+  date_to?: string;
 }
 
 export class ExportCarsDto {
