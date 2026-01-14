@@ -4,11 +4,22 @@ import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { AppModule } from './app.module';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create(AppModule, {
+    bodyParser: true,
+    rawBody: false,
+  });
   
   // Настройка trust proxy для правильного получения IP адреса
   const expressApp = app.getHttpAdapter().getInstance();
   expressApp.set('trust proxy', true);
+  
+  // Увеличение лимита размера тела запроса (до 50MB)
+  // Для ответов лимит не устанавливается явно, так как мы отправляем файлы через res.send()
+  expressApp.use((req, res, next) => {
+    req.setTimeout(300000); // 5 минут таймаут для запросов
+    res.setTimeout(300000); // 5 минут таймаут для ответов
+    next();
+  });
   
   // Глобальная валидация
   app.useGlobalPipes(new ValidationPipe({

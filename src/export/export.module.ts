@@ -1,5 +1,6 @@
 import { Module, forwardRef } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { ConfigModule } from '@nestjs/config';
 import { ExportController } from './export.controller';
 import { ExportService } from './export.service';
 import { CarListing } from '../car-listings/entities/car-listing.entity';
@@ -10,6 +11,7 @@ import { HistoryModule } from '../history/history.module';
 @Module({
   imports: [
     TypeOrmModule.forFeature([CarListing, User]),
+    ConfigModule,
     UsersModule,
     forwardRef(() => HistoryModule),
   ],

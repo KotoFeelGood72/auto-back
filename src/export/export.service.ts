@@ -1,4 +1,5 @@
 import { Injectable, BadRequestException, PayloadTooLargeException, GatewayTimeoutException, Logger, Inject, forwardRef } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CarListing } from '../car-listings/entities/car-listing.entity';
@@ -14,7 +15,7 @@ import * as XLSX from 'xlsx';
 @Injectable()
 export class ExportService {
   private readonly logger = new Logger(ExportService.name);
-  private readonly MAX_RECORDS = 50000;
+  private readonly MAX_RECORDS: number;
   private readonly TIMEOUT_MS = 5 * 60 * 1000; // 5 минут
 
   // Доступные поля для экспорта автомобилей
@@ -95,7 +96,13 @@ export class ExportService {
     private usersRepository: Repository<User>,
     @Inject(forwardRef(() => HistoryService))
     private historyService: HistoryService,
-  ) {}
+    private configService: ConfigService,
+  ) {
+    // Лимит записей настраивается через переменную окружения EXPORT_MAX_RECORDS
+    // По умолчанию: 100000 записей
+    this.MAX_RECORDS = this.configService.get<number>('EXPORT_MAX_RECORDS', 100000);
+    this.logger.log(`Лимит записей для экспорта установлен: ${this.MAX_RECORDS}`);
+  }
 
   async exportCars(dto: ExportCarsDto, userId?: number, userName?: string, request?: Request): Promise<Buffer | string> {
     const startTime = Date.now();

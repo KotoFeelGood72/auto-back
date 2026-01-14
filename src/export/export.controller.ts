@@ -45,17 +45,14 @@ export class ExportController {
       const userName = user.firstName && user.lastName ? `${user.firstName} ${user.lastName}` : user.email;
       const result = await this.exportService.exportCars(dto, user.userId, userName, req);
 
-      if (dto.format === ExportFormat.JSON) {
-        res.setHeader('Content-Type', 'application/json; charset=utf-8');
-        return res.json(JSON.parse(result as string));
-      }
-
       const filename = this.generateFilename('cars', dto.format);
       const contentType = this.getContentType(dto.format);
 
       res.setHeader('Content-Type', contentType);
       res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
 
+      // Для всех форматов отправляем как файл для скачивания
+      // Это предотвращает ошибку 413 Payload Too Large
       return res.send(result);
     } catch (error) {
       throw error;
@@ -78,17 +75,14 @@ export class ExportController {
       const userName = user.firstName && user.lastName ? `${user.firstName} ${user.lastName}` : user.email;
       const result = await this.exportService.exportUsers(dto, user.userId, userName, req);
 
-      if (dto.format === ExportFormat.JSON) {
-        res.setHeader('Content-Type', 'application/json; charset=utf-8');
-        return res.json(JSON.parse(result as string));
-      }
-
       const filename = this.generateFilename('users', dto.format);
       const contentType = this.getContentType(dto.format);
 
       res.setHeader('Content-Type', contentType);
       res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
 
+      // Для всех форматов отправляем как файл для скачивания
+      // Это предотвращает ошибку 413 Payload Too Large
       return res.send(result);
     } catch (error) {
       throw error;
@@ -173,6 +167,8 @@ export class ExportController {
         return 'text/csv; charset=utf-8';
       case ExportFormat.EXCEL:
         return 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+      case ExportFormat.JSON:
+        return 'application/json; charset=utf-8';
       default:
         return 'application/octet-stream';
     }
